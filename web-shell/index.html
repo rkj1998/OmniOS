@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OmniOS v4.0 | Open-Source Cyber-Physical Environment OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        .glass-win { background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-[#060911] text-slate-100 h-screen overflow-hidden flex flex-col font-sans select-none">
+
+    <!-- TOP OS KERNEL BAR (Ubuntu / macOS Style) -->
+    <header class="h-11 bg-slate-950/90 border-b border-slate-800/80 px-4 flex items-center justify-between text-xs z-30">
+        <div class="flex items-center gap-4">
+            <span class="font-bold text-sm bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                ⚡ OmniOS Environment v4.0
+            </span>
+            <span class="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono text-[11px]">
+                OPEN-CORE GIT EDITION
+            </span>
+            <span id="hw-banner" class="text-slate-400 hidden md:inline">Initializing hardware profiler...</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <span id="ollama-pill" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300">Checking Ollama...</span>
+            <div class="px-3 py-1 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold">
+                💰 <span id="savings-counter">$0.000 Saved (0 Zero-Token Runs)</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN OS DESKTOP BODY (LEFT DOCK + WORKSPACE CANVAS) -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- LEFT UBUNTU-STYLE SYSTEM DOCK -->
+        <aside class="w-16 bg-slate-950 border-r border-slate-800/80 flex flex-col items-center py-4 gap-3 z-20">
+            <button onclick="switchWorkspace('all')" id="dock-all" title="Unified Command Desktop"
+                class="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-500/50 flex flex-col items-center justify-center text-[10px] text-emerald-300 font-bold hover:scale-105 transition">
+                <span>🌐</span><span>OS</span>
+            </button>
+            <button onclick="switchWorkspace('work')" id="dock-work" title="Omni-Jira & Omni-Slack"
+                class="w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex flex-col items-center justify-center text-[10px] text-slate-300 transition">
+                <span>📋</span><span>Work</span>
+            </button>
+            <button onclick="switchWorkspace('studio')" id="dock-studio" title="Omni-Studio (Photoshop/Vector/CAD)"
+                class="w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex flex-col items-center justify-center text-[10px] text-slate-300 transition">
+                <span>🎨</span><span>Studio</span>
+            </button>
+            <button onclick="switchWorkspace('scada')" id="dock-scada" title="Calgary IIoT SCADA & ERP"
+                class="w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex flex-col items-center justify-center text-[10px] text-slate-300 transition">
+                <span>🏭</span><span>IIoT</span>
+            </button>
+            <button onclick="switchWorkspace('models')" id="dock-models" title="AI Kernel & RTX 4080 Model Matrix"
+                class="w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex flex-col items-center justify-center text-[10px] text-cyan-300 transition">
+                <span>🧠</span><span>Models</span>
+            </button>
+            <button onclick="switchWorkspace('logs')" id="dock-logs" title="Master Audit & Status Logs"
+                class="w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex flex-col items-center justify-center text-[10px] text-amber-300 transition mt-auto">
+                <span>📜</span><span>Logs</span>
+            </button>
+        </aside>
+
+        <!-- SPATIAL WORKSPACE AREA -->
+        <main class="flex-1 flex flex-col overflow-y-auto p-5 gap-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#060911] to-[#060911]">
+
+            <!-- SPOTLIGHT OMNI-COMMAND BAR -->
+            <section class="glass-win border border-slate-800 rounded-xl p-3.5 shadow-2xl">
+                <div class="flex flex-wrap gap-2 mb-2.5">
+                    <button onclick="setPrompt('Create a HIGH priority Jira ticket to redesign the hero banner, render the composite in Creative Studio, and notify #design-studio on Slack')"
+                        class="text-xs bg-pink-500/10 hover:bg-pink-500/20 text-pink-300 border border-pink-500/30 px-2.5 py-1 rounded-md">
+                        🎨 1. Creative Studio + Jira + Slack
+                    </button>
+                    <button onclick="setPrompt('Update Jira sprint ticket for release, run real PC diagnostics and auto-sort workspace files on Workstation-RTX4080, and post log to #dev-sprint')"
+                        class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2.5 py-1 rounded-md">
+                        💻 2. Jira + Real PC Diagnostics/File Sort + Slack
+                    </button>
+                    <button onclick="setPrompt('Check Calgary Pump #4 vibration spike, throttle to 1100 RPM safely, create CRITICAL Jira ticket, order bearings in ERP, render CAD schematic, and alert #calgary-ops')"
+                        class="text-xs bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-md">
+                        🏭 3. Calgary IIoT SCADA + Jira + ERP + CAD Flow
+                    </button>
+                    <button onclick="setPrompt('Reset Calgary Pump #4 back to 1450 RPM normal operating speed and notify #calgary-ops')"
+                        class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1 rounded-md">
+                        🔄 Reset Pump #4 (1450 RPM)
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                    <select id="engine-select" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5 text-xs text-emerald-400 font-bold">
+                        <option value="auto">⚡ Auto Hybrid (SQLite Macro -> Groq 70B -> Local RTX 4080)</option>
+                        <option value="groq:llama-3.3-70b-versatile">☁️ Groq Cloud: Llama-3.3-70B (800 tok/s)</option>
+                        <option value="ollama:qwen2.5-coder:14b">🏆 Local 4080: Qwen 2.5 Coder 14B</option>
+                        <option value="ollama:qwen2.5-coder:7b">⭐ Local 4080: Qwen 2.5 Coder 7B</option>
+                        <option value="ollama:glm4:9b">🧠 Local 4080: GLM-4 9B Chat</option>
+                        <option value="ollama:deepseek-r1:14b">🔬 Local 4080: DeepSeek-R1 14B</option>
+                    </select>
+                    <input id="prompt-input" type="text"
+                        placeholder="Press Enter or click Run Agent to execute across Jira, Slack, Studio, PC, ERP & Calgary IIoT..."
+                        onkeydown="if(event.key==='Enter') executePrompt()"
+                        class="flex-1 min-w-[260px] bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                    <label class="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-950 px-3 rounded-lg border border-slate-800 cursor-pointer">
+                        <input id="bypass-cache" type="checkbox" class="accent-emerald-400" />
+                        Force Re-Compile
+                    </label>
+                    <button onclick="executePrompt()" id="run-btn"
+                        class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-2.5 rounded-lg text-sm transition shadow-lg shadow-emerald-500/10">
+                        ▶ Run Agent
+                    </button>
+                </div>
+
+                <!-- LIVE TELEMETRY & VISUAL NODE PIPELINE -->
+                <div class="grid grid-cols-4 gap-3 mt-3 pt-3 border-t border-slate-800/80 text-xs">
+                    <div><span class="text-slate-500">Mode:</span> <b id="m-mode" class="text-cyan-400 ml-1">KERNEL_READY</b></div>
+                    <div><span class="text-slate-500">Latency:</span> <b id="m-latency" class="text-white ml-1">0.00 ms</b></div>
+                    <div><span class="text-slate-500">Tokens:</span> <b id="m-tokens" class="text-amber-400 ml-1">0</b></div>
+                    <div><span class="text-slate-500">Cost:</span> <b id="m-cost" class="text-emerald-400 ml-1">$0.0000</b></div>
+                </div>
+                <div id="node-pipeline" class="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-mono text-slate-400"></div>
+            </section>
+
+            <!-- AI MODEL BENCHMARK MATRIX WINDOW (Hidden unless toggled via Dock) -->
+            <section id="win-models" class="hidden glass-win border border-cyan-500/40 rounded-xl p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-cyan-400">🧠 Hardware-Matched LLM Benchmark & 1-Click Installer</h2>
+                    <button onclick="switchWorkspace('all')" class="text-xs text-slate-400 hover:text-white">✕ Close</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="p-2">Model</th><th class="p-2">VRAM</th><th class="p-2">Speed</th>
+                                <th class="p-2">Agent Score</th><th class="p-2">Code Score</th><th class="p-2">Hardware Fit</th><th class="p-2">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="model-table-body" class="divide-y divide-slate-800/60"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 24/7 COMPILED MACROS & DAEMON MANAGER -->
+            <section id="win-macros" class="glass-win border border-emerald-500/30 rounded-xl p-3.5">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">
+                    🤖 Compiled $0.00 Python Macros & 24/7 Autonomous Daemons
+                </h2>
+                <div id="macro-list" class="space-y-1.5 text-xs text-slate-400">Run any prompt above to compile your first $0.00 deterministic macro.</div>
+            </section>
+
+            <!-- MULTI-WINDOW OS DESKTOP GRID -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+                <!-- WINDOW 1: OMNI-JIRA SPRINT BOARD -->
+                <section id="win-jira" class="glass-win border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-blue-400">📋 Omni-Jira — Sprint & Bug Tracker</h2>
+                            <span class="text-[10px] text-slate-400">Click status badge to cycle ↻</span>
+                        </div>
+                        <div id="jira-panel" class="space-y-2 text-xs max-h-60 overflow-y-auto"></div>
+                    </div>
+                    <!-- Quick Manual Ticket Creator -->
+                    <div class="flex gap-2 mt-3 pt-2.5 border-t border-slate-800/80">
+                        <input id="jira-title" type="text" placeholder="New ticket title..." class="flex-1 bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs" />
+                        <select id="jira-prio" class="bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-amber-300">
+                            <option value="HIGH">HIGH</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                            <option value="MEDIUM">MEDIUM</option>
+                        </select>
+                        <button onclick="createJiraTicket()" class="bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 font-bold px-3 py-1.5 rounded text-xs">+ Ticket</button>
+                    </div>
+                </section>
+
+                <!-- WINDOW 2: OMNI-STUDIO (PHOTOSHOP / VECTOR / CAD) -->
+                <section id="win-studio" class="glass-win border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-pink-400">🎨 Omni-Studio — Raster (.PNG) & Vector (.SVG) Canvas</h2>
+                        <span id="png-badge" class="text-[10px] text-emerald-400 font-mono"></span>
+                    </div>
+                    <div id="svg-canvas" class="bg-slate-950 rounded-lg p-2 flex items-center justify-center min-h-[220px] text-xs text-slate-500 border border-slate-800/60">
+                        Click Preset #1 or #3 above to render a live multi-layer graphic or CAD schematic
+                    </div>
+                </section>
+
+                <!-- WINDOW 3: OMNI-SLACK WORKSPACE -->
+                <section id="win-slack" class="glass-win border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-3">💬 Omni-Slack — Team & Bot Channels</h2>
+                        <div id="comms-panel" class="space-y-2 text-xs max-h-56 overflow-y-auto mb-3"></div>
+                    </div>
+                    <div class="flex gap-2 pt-2.5 border-t border-slate-800/80">
+                        <input id="slack-channel" type="text" value="#dev-sprint" class="w-32 bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-cyan-300 font-mono" />
+                        <input id="slack-msg" type="text" placeholder="Message channel..." onkeydown="if(event.key==='Enter') sendSlack()" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs" />
+                        <button onclick="sendSlack()" class="bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 font-bold px-3 py-1.5 rounded text-xs">Send</button>
+                    </div>
+                </section>
+
+                <!-- WINDOW 4: CALGARY IIoT SCADA DIGITAL TWIN & ERP -->
+                <section id="win-scada" class="glass-win border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-amber-400">🏭 Calgary IIoT SCADA Digital Twin & ERP Supply</h2>
+                        <span class="text-[10px] font-mono text-emerald-400">🛡️ PLC GUARDRAIL: LOCKED (400-1800 RPM)</span>
+                    </div>
+                    <div id="iiot-panel" class="space-y-2 text-xs mb-3"></div>
+                    <div class="text-[11px] font-bold text-slate-400 uppercase mb-1.5">📦 Dispatched ERP Purchase Orders:</div>
+                    <div id="erp-panel" class="space-y-1.5 text-xs max-h-32 overflow-y-auto"></div>
+                </section>
+            </div>
+
+            <!-- WINDOW 5: MASTER SYSTEM STATUS & REAL-TIME AUDIT LOGS -->
+            <section id="win-logs" class="glass-win border border-slate-800 rounded-xl p-4">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">📜 Master Kernel Status & Real-Time Audit Logs (All Modules)</h2>
+                <div class="overflow-x-auto max-h-60 overflow-y-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="p-1.5">Timestamp</th><th class="p-1.5">Module</th>
+                                <th class="p-1.5">Action / Target</th><th class="p-1.5">Status</th><th class="p-1.5">Execution Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="status-log-body" class="divide-y divide-slate-800/40 font-mono text-[11px]"></tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        function setPrompt(text) {
+            document.getElementById('prompt-input').value = text;
+        }
+        function selectModel(modelId) {
+            document.getElementById('engine-select').value = modelId;
+            switchWorkspace('all');
+        }
+        function switchWorkspace(mode) {
+            const ids = ['win-models', 'win-macros', 'win-jira', 'win-studio', 'win-slack', 'win-scada', 'win-logs'];
+            if (mode === 'all') {
+                document.getElementById('win-models').classList.add('hidden');
+                ['win-macros', 'win-jira', 'win-studio', 'win-slack', 'win-scada', 'win-logs'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+            } else if (mode === 'models') {
+                ids.forEach(id => document.getElementById(id).classList.add('hidden'));
+                document.getElementById('win-models').classList.remove('hidden');
+            } else if (mode === 'work') {
+                ids.forEach(id => document.getElementById(id).classList.add('hidden'));
+                document.getElementById('win-jira').classList.remove('hidden');
+                document.getElementById('win-slack').classList.remove('hidden');
+            } else if (mode === 'studio') {
+                ids.forEach(id => document.getElementById(id).classList.add('hidden'));
+                document.getElementById('win-studio').classList.remove('hidden');
+            } else if (mode === 'scada') {
+                ids.forEach(id => document.getElementById(id).classList.add('hidden'));
+                document.getElementById('win-scada').classList.remove('hidden');
+            } else if (mode === 'logs') {
+                ids.forEach(id => document.getElementById(id).classList.add('hidden'));
+                document.getElementById('win-logs').classList.remove('hidden');
+            }
+        }
+
+        async function pullModel(event, modelId) {
+            event.stopPropagation();
+            const res = await fetch('/api/pull-model', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model_tag: modelId })
+            });
+            const data = await res.json();
+            alert(data.message);
+        }
+        async function toggleDaemon(hash) {
+            await fetch('/api/toggle-daemon', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ intent_hash: hash })
+            });
+            await refreshLiveState();
+        }
+        async function cycleJira(key, currentStatus) {
+            const order = ['TODO', 'IN_PROGRESS', 'DONE'];
+            const nextStatus = order[(order.indexOf(currentStatus) + 1) % order.length];
+            await fetch('/api/jira-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticket_key: key, new_status: nextStatus })
+            });
+            await refreshLiveState();
+        }
+        async function createJiraTicket() {
+            const title = document.getElementById('jira-title').value;
+            const priority = document.getElementById('jira-prio').value;
+            if (!title) return;
+            await fetch('/api/jira-create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: title, priority: priority })
+            });
+            document.getElementById('jira-title').value = '';
+            await refreshLiveState();
+        }
+        async function sendSlack() {
+            const channel = document.getElementById('slack-channel').value || '#general';
+            const message = document.getElementById('slack-msg').value;
+            if (!message) return;
+            await fetch('/api/slack-post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ channel: channel, message: message })
+            });
+            document.getElementById('slack-msg').value = '';
+            await refreshLiveState();
+        }
+
+        async function loadHardwareAndModels() {
+            try {
+                const res = await fetch('/api/hardware-models');
+                const hw = await res.json();
+                document.getElementById('hw-banner').innerHTML =
+                    'GPU: <b class="text-emerald-400">' + hw.gpu_name + ' (' + hw.vram_gb + 'GB)</b> • CPU: <b>' + hw.cpu_cores + ' Cores</b> • RAM: <b>' + hw.ram_gb + 'GB</b>';
+                document.getElementById('ollama-pill').innerHTML = hw.ollama_online
+                    ? '<span class="text-emerald-400 font-bold">● Ollama Online (' + hw.installed_ollama_models.length + ' local)</span>'
+                    : '<span class="text-amber-400">● Ollama Offline (Cloud Ready)</span>';
+
+                let rows = '';
+                for (const m of hw.models) {
+                    const actionBtn = !m.installed
+                        ? '<button onclick="pullModel(event, \'' + m.id + '\')" class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-300 font-bold">⬇ Pull</button>'
+                        : '<span class="text-emerald-400">✓ Ready</span>';
+                    rows += '<tr class="hover:bg-slate-800/50 cursor-pointer" onclick="selectModel(\'' + m.id + '\')">' +
+                        '<td class="p-2"><b class="text-white">' + m.name + '</b><div class="text-[10px] text-slate-400">' + m.best_for + '</div></td>' +
+                        '<td class="p-2 font-mono">' + m.vram_gb + ' GB</td>' +
+                        '<td class="p-2 font-mono text-cyan-300">~' + m.speed_tps + ' tok/s</td>' +
+                        '<td class="p-2 text-emerald-300 font-bold">' + m.agent_score + '%</td>' +
+                        '<td class="p-2 text-purple-300 font-bold">' + m.coding_score + '%</td>' +
+                        '<td class="p-2"><div class="text-amber-300 font-bold">' + m.recommended_badge + '</div><div class="text-[10px] text-slate-400">' + m.compatibility + '</div></td>' +
+                        '<td class="p-2 flex gap-2"><button class="px-2 py-1 rounded bg-cyan-500/20 text-cyan-300 font-bold">Use</button>' + actionBtn + '</td></tr>';
+                }
+                document.getElementById('model-table-body').innerHTML = rows;
+            } catch (e) { console.error(e); }
+        }
+
+        async function refreshLiveState() {
+            try {
+                const res = await fetch('/api/live-state');
+                const state = await res.json();
+
+                document.getElementById('savings-counter').innerText =
+                    '$' + state.dollars_saved.toFixed(3) + ' Saved (' + state.zero_hits + ' Zero-Token Runs)';
+
+                // Macros
+                if (state.macros && state.macros.length > 0) {
+                    document.getElementById('macro-list').innerHTML = state.macros.map(mc =>
+                        '<div class="p-2 bg-slate-950 rounded border border-slate-800 flex justify-between items-center gap-2">' +
+                        '<div><span class="text-emerald-400 font-mono font-bold">[macro_' + mc.hash + '.py]</span> <span class="text-slate-200 ml-1">' + mc.prompt + '</span> <span class="text-amber-300 ml-1">(' + mc.hits + ' hits)</span></div>' +
+                        '<button onclick="toggleDaemon(\'' + mc.hash + '\')" class="px-2.5 py-1 rounded font-bold text-xs ' + (mc.daemon_active ? 'bg-emerald-500 text-slate-950 animate-pulse' : 'bg-slate-800 text-slate-300') + '">' +
+                        (mc.daemon_active ? '● 24/7 Daemon ACTIVE ($0)' : '▶ Run 24/7 Daemon ($0)') + '</button></div>'
+                    ).join('');
+                }
+
+                // Jira
+                if (state.tickets) {
+                    document.getElementById('jira-panel').innerHTML = state.tickets.map(t =>
+                        '<div class="p-2.5 bg-slate-950 rounded border border-slate-800 flex justify-between items-center">' +
+                        '<div><span class="font-mono font-bold text-blue-400">' + t.key + '</span> <span class="text-white font-semibold ml-1">' + t.title + '</span>' +
+                        '<div class="text-[10px] text-slate-400 mt-0.5">Assignee: <b class="text-slate-200">' + t.assignee + '</b> • ' + t.sprint + ' • ' + t.time + '</div></div>' +
+                        '<div class="flex gap-1.5 items-center">' +
+                        '<span class="px-2 py-0.5 rounded text-[10px] font-bold ' + (t.priority === 'CRITICAL' ? 'bg-red-500/20 text-red-300' : 'bg-amber-500/20 text-amber-300') + '">' + t.priority + '</span>' +
+                        '<button onclick="cycleJira(\'' + t.key + '\', \'' + t.status + '\')" class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 hover:bg-blue-500/40 text-blue-300">' + t.status + ' ↻</button></div></div>'
+                    ).join('');
+                }
+
+                // Slack
+                if (state.messages && state.messages.length > 0) {
+                    document.getElementById('comms-panel').innerHTML = state.messages.map(msg =>
+                        '<div class="p-2 bg-slate-950 rounded border border-slate-800">' +
+                        '<div class="flex justify-between"><b class="text-cyan-400 font-mono">' + msg.channel + '</b><span class="text-slate-500 text-[10px]">' + msg.time + '</span></div>' +
+                        '<div class="text-slate-200 mt-0.5">' + msg.message + '</div></div>'
+                    ).join('');
+                }
+
+                // IIoT Machines
+                if (state.machines) {
+                    document.getElementById('iiot-panel').innerHTML = state.machines.map(m =>
+                        '<div class="p-2.5 bg-slate-950 rounded border border-slate-800 flex justify-between items-center">' +
+                        '<div><div class="font-bold text-white">' + m.id + ' <span class="text-slate-400 font-normal">(' + m.location + ')</span></div>' +
+                        '<div class="text-slate-400 mt-0.5">Temp: <b class="text-amber-300">' + m.temp + '°C</b> | Vib: <b class="text-amber-300">' + m.vib + ' mm/s</b> | Speed: <b class="text-cyan-300">' + m.rpm + ' RPM</b></div></div>' +
+                        '<span class="px-2 py-1 rounded text-[10px] font-bold ' + ((m.status.includes('SAFE') || m.status === 'OPTIMAL') ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300') + '">' + m.status + '</span></div>'
+                    ).join('');
+                }
+
+                // ERP Orders
+                if (state.purchase_orders && state.purchase_orders.length > 0) {
+                    document.getElementById('erp-panel').innerHTML = state.purchase_orders.map(p =>
+                        '<div class="p-1.5 bg-slate-950 rounded border border-slate-800 flex justify-between">' +
+                        '<span><b class="text-emerald-400 font-mono">' + p.po + '</b> • ' + p.sku + ' (x' + p.qty + ') → ' + p.supplier + '</span>' +
+                        '<span class="text-white font-bold">$' + p.cost + '</span></div>'
+                    ).join('');
+                }
+
+                // Audit Logs
+                if (state.logs && state.logs.length > 0) {
+                    document.getElementById('status-log-body').innerHTML = state.logs.map(l =>
+                        '<tr><td class="p-1.5 text-slate-400">' + l.time + '</td>' +
+                        '<td class="p-1.5"><span class="px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300 font-bold">' + l.module + '</span></td>' +
+                        '<td class="p-1.5 text-white font-semibold">' + l.action + '</td>' +
+                        '<td class="p-1.5 text-emerald-400 font-bold">' + l.status + '</td>' +
+                        '<td class="p-1.5 text-slate-300">' + l.details + '</td></tr>'
+                    ).join('');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function executePrompt() {
+            const prompt = document.getElementById('prompt-input').value;
+            const engine_mode = document.getElementById('engine-select').value;
+            const bypass_cache = document.getElementById('bypass-cache').checked;
+            if (!prompt) return;
+
+            const btn = document.getElementById('run-btn');
+            btn.innerText = '⚡ Running...';
+            try {
+                const res = await fetch('/api/command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt, engine_mode: engine_mode, bypass_cache: bypass_cache })
+                });
+                const data = await res.json();
+                document.getElementById('m-mode').innerText = data.execution_mode;
+                document.getElementById('m-latency').innerText = data.latency_ms + ' ms';
+                document.getElementById('m-tokens').innerText = data.llm_tokens_burned;
+                document.getElementById('m-cost').innerText = '$' + data.execution_cost_usd.toFixed(4);
+
+                // Render Visual Node Graph Pipeline
+                if (data.workflow_results) {
+                    document.getElementById('node-pipeline').innerHTML =
+                        '<span class="text-emerald-400 font-bold">PIPELINE:</span> ' +
+                        data.workflow_results.map(s =>
+                            '<span class="px-2 py-0.5 rounded bg-slate-900 border border-emerald-500/40 text-emerald-300">● ' + s.tool + '</span>'
+                        ).join(' ──► ');
+
+                    for (const step of data.workflow_results) {
+                        if (step.data && step.data.svg_preview) {
+                            document.getElementById('svg-canvas').innerHTML = step.data.svg_preview;
+                            if (step.data.png_file) {
+                                document.getElementById('png-badge').innerText = 'Saved Raster: ' + step.data.png_file;
+                            }
+                        }
+                    }
+                }
+                await refreshLiveState();
+            } finally {
+                btn.innerText = '▶ Run Agent';
+            }
+        }
+
+        loadHardwareAndModels();
+        refreshLiveState();
+        setInterval(refreshLiveState, 4000);
+    </script>
+</body>
+</html>

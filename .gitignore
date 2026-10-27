@@ -1,0 +1,15 @@
+﻿# Virtual Env & Python Bytecode
+omnios_env/
+__pycache__/
+*.pyc
+
+# Local Databases & Secrets
+*.db
+*.db-journal
+.env
+
+# Local Models & Generated Assets
+ollama-models/
+compiled-macros/*.png
+compiled-macros/*.svg
+workspace-files/*

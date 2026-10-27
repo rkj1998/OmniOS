@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # 1. Semantic Cache & Instant Macro Lookup (0ms latency)
+  redis-cache:
+    image: redis:7-alpine
+    container_name: omnios-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # 2. Unified Database: ERP Tables + AI Vectors + Industrial IoT Telemetry
+  omnios-db:
+    image: timescale/timescaledb-ha:pg16
+    container_name: omnios-postgres
+    environment:
+      POSTGRES_USER: omnios_admin
+      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_DB: omnios_core
+    ports:
+      - "5432:5432"
+    volumes:
+      - omnios_pgdata:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  omnios_pgdata:
