@@ -1,5 +1,7 @@
 # R:\OmniOS\main.py
 import os
+import io
+import csv
 import sys
 import sqlite3
 import subprocess
@@ -8,52 +10,18 @@ import datetime
 sys.path.append(r"R:\OmniOS\core-cortex")
 
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from cortex_engine import CortexOptimizationEngine
 from hardware_profiler import detect_local_hardware
 
 DB_PATH = r"R:\OmniOS\omnios_core.db"
 HTML_PATH = r"R:\OmniOS\web-shell\index.html"
+ASSETS_DIR = r"R:\OmniOS\compiled-macros"
 
-app = FastAPI(title="OmniOS v4.0 - Open-Source Cyber-Physical Environment OS")
+app = FastAPI(title="OmniOS v5.0 Nova - Open-Source Cyber-Physical Environment OS")
 cortex = CortexOptimizationEngine()
 ACTIVE_DAEMONS = set()
-
-def ensure_all_v4_tables_exist():
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS system_status_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            module TEXT, action TEXT, status TEXT, details TEXT, created_at TEXT
-        )
-    """)
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS jira_tickets (
-            ticket_key TEXT PRIMARY KEY,
-            title TEXT, assignee TEXT, priority TEXT, status TEXT, sprint TEXT, updated_at TEXT
-        )
-    """)
-    cur.execute("SELECT COUNT(*) FROM jira_tickets")
-    if cur.fetchone()[0] == 0:
-        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-        cur.executemany("INSERT INTO jira_tickets VALUES (?, ?, ?, ?, ?, ?, ?)", [
-            ("OMNI-101", "Integrate Photoshop Layer Mask AI Pipeline", "Design-Agent", "HIGH", "IN_PROGRESS", "Sprint-4", now),
-            ("OMNI-102", "Calgary Plant Pump #4 Bearing Inspection", "Field-Bot-01", "CRITICAL", "TODO", "Sprint-4", now),
-            ("OMNI-103", "Automate ERP Supplier Invoice Sync", "Ops-Agent", "MEDIUM", "DONE", "Sprint-4", now)
-        ])
-    cur.execute("SELECT COUNT(*) FROM system_status_logs")
-    if cur.fetchone()[0] == 0:
-        now_s = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute(
-            "INSERT INTO system_status_logs (module, action, status, details, created_at) VALUES (?, ?, ?, ?, ?)",
-            ("KERNEL_V4", "System Boot", "ONLINE", "OmniOS v4.0 Spatial Environment & Git Open-Core initialized.", now_s)
-        )
-    conn.commit()
-    conn.close()
-
-ensure_all_v4_tables_exist()
 
 class PromptRequest(BaseModel):
     prompt: str
@@ -78,6 +46,24 @@ class SlackPostRequest(BaseModel):
     channel: str
     message: str
 
+class SlackApproveRequest(BaseModel):
+    msg_id: int
+
+class ScadaControlRequest(BaseModel):
+    machine_id: str = "CALGARY-PUMP-04"
+    target_rpm: int = 1100
+    simulate_spike: bool = False
+
+class StudioRenderRequest(BaseModel):
+    template_type: str = "PHOTOSHOP_COMPOSITE"
+    headline_text: str = "Omni-Studio Render"
+    highlight_component: str = "Primary_Mask"
+    contrast_boost: float = 1.35
+    theme_color: str = "cyber"
+
+class PackageToggleRequest(BaseModel):
+    pkg_id: str
+
 async def background_daemon_loop():
     while True:
         await asyncio.sleep(15)
@@ -101,6 +87,43 @@ async def start_daemons():
 async def run_omni_command(req: PromptRequest):
     return cortex.process_command(req.prompt, req.engine_mode, req.bypass_cache)
 
+@app.post("/api/scada-control")
+async def direct_scada_control(req: ScadaControlRequest):
+    if req.simulate_spike:
+        return cortex.mcp.execute("iiot_read_and_control_pump", {"machine_id": req.machine_id, "simulate_spike": True})
+    return cortex.mcp.execute("iiot_read_and_control_pump", {"machine_id": req.machine_id, "target_rpm": req.target_rpm})
+
+@app.post("/api/studio-render")
+async def direct_studio_render(req: StudioRenderRequest):
+    return cortex.mcp.execute("creative_generate_visual_asset", {
+        "template_type": req.template_type,
+        "headline_text": req.headline_text,
+        "highlight_component": req.highlight_component,
+        "contrast_boost": req.contrast_boost,
+        "theme_color": req.theme_color
+    })
+
+@app.post("/api/pc-scan")
+async def direct_pc_scan():
+    return cortex.mcp.execute("device_automate_action", {
+        "device_name": "Workstation-RTX4080",
+        "action": "Instant Diagnostics & Workspace File Sort"
+    })
+
+@app.post("/api/toggle-package")
+async def toggle_omni_package(req: PackageToggleRequest):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT installed, name FROM omni_packages WHERE pkg_id = ?", (req.pkg_id,))
+    row = cur.fetchone()
+    if row:
+        new_val = 0 if row[0] == 1 else 1
+        cur.execute("UPDATE omni_packages SET installed = ? WHERE pkg_id = ?", (new_val, req.pkg_id))
+        conn.commit()
+        cortex.mcp._log_status("OMNI_HUB", req.pkg_id, "INSTALLED" if new_val else "DISABLED", f"Package '{row[1]}' state updated")
+    conn.close()
+    return {"status": "ok"}
+
 @app.post("/api/pull-model")
 async def pull_ollama_model(req: PullModelRequest):
     tag = req.model_tag.replace("ollama:", "")
@@ -120,13 +143,9 @@ async def update_jira_ticket_status(req: JiraStatusUpdate):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     cur.execute("UPDATE jira_tickets SET status = ? WHERE ticket_key = ?", (req.new_status, req.ticket_key))
-    now_s = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cur.execute(
-        "INSERT INTO system_status_logs (module, action, status, details, created_at) VALUES (?, ?, ?, ?, ?)",
-        ("JIRA_BOARD", f"Ticket {req.ticket_key}", req.new_status, f"Status cycled to {req.new_status}", now_s)
-    )
     conn.commit()
     conn.close()
+    cortex.mcp._log_status("JIRA_BOARD", f"Ticket {req.ticket_key}", req.new_status, f"Status cycled to {req.new_status}")
     return {"status": "updated"}
 
 @app.post("/api/jira-create")
@@ -137,13 +156,48 @@ async def manual_jira_create(req: JiraCreateRequest):
 async def manual_slack_post(req: SlackPostRequest):
     return cortex.mcp.execute("comms_post_alert", {"channel": req.channel, "message": req.message, "require_approval": False})
 
+@app.post("/api/slack-approve")
+async def approve_slack_gate(req: SlackApproveRequest):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("UPDATE comms_messages SET require_approval = 2 WHERE id = ?", (req.msg_id,))
+    conn.commit()
+    conn.close()
+    cortex.mcp._log_status("ENTERPRISE_RBAC", f"Approval Gate #{req.msg_id}", "SIGNED_APPROVED", "Operator cryptographically approved action in Omni-Slack")
+    return {"status": "approved"}
+
+@app.get("/api/assets/{filename}")
+async def serve_generated_asset(filename: str):
+    fpath = os.path.join(ASSETS_DIR, filename)
+    if os.path.exists(fpath):
+        return FileResponse(fpath)
+    return {"error": "File not found"}
+
+@app.get("/api/export-audit-csv")
+async def export_compliance_audit_csv():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT id, created_at, module, action, status, details FROM system_status_logs ORDER BY id DESC")
+    rows = cur.fetchall()
+    conn.close()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Log_ID", "Timestamp", "Module", "Action_Target", "Status_Code", "Execution_Details"])
+    writer.writerows(rows)
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=OmniOS_Compliance_Audit_Log.csv"}
+    )
+
 @app.get("/api/hardware-models")
 async def get_hardware_and_models():
     return detect_local_hardware()
 
 @app.get("/api/live-state")
 async def get_live_system_state():
-    ensure_all_v4_tables_exist()
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
@@ -156,11 +210,14 @@ async def get_live_system_state():
     cur.execute("SELECT po_number, sku, qty, total_cost, supplier, status, created_at FROM erp_purchase_orders ORDER BY rowid DESC LIMIT 6")
     pos = [dict(zip(["po", "sku", "qty", "cost", "supplier", "status", "time"], r)) for r in cur.fetchall()]
 
-    cur.execute("SELECT channel, message, require_approval, created_at FROM comms_messages ORDER BY id DESC LIMIT 8")
-    msgs = [dict(zip(["channel", "message", "approval", "time"], r)) for r in cur.fetchall()]
+    cur.execute("SELECT id, channel, message, require_approval, created_at FROM comms_messages ORDER BY id DESC LIMIT 8")
+    msgs = [dict(zip(["id", "channel", "message", "approval", "time"], r)) for r in cur.fetchall()]
 
-    cur.execute("SELECT module, action, status, details, created_at FROM system_status_logs ORDER BY id DESC LIMIT 20")
+    cur.execute("SELECT module, action, status, details, created_at FROM system_status_logs ORDER BY id DESC LIMIT 25")
     logs = [dict(zip(["module", "action", "status", "details", "time"], r)) for r in cur.fetchall()]
+
+    cur.execute("SELECT pkg_id, name, category, version, description, installed FROM omni_packages")
+    packages = [dict(zip(["id", "name", "category", "version", "desc", "installed"], r)) for r in cur.fetchall()]
 
     cur.execute("SELECT intent_hash, prompt, macro_file, hit_count FROM semantic_macro_cache ORDER BY rowid DESC")
     macros = [{"hash": r[0], "prompt": r[1], "file": r[2], "hits": r[3], "daemon_active": r[0] in ACTIVE_DAEMONS} for r in cur.fetchall()]
@@ -170,7 +227,7 @@ async def get_live_system_state():
     conn.close()
     return {
         "tickets": tickets, "machines": machines, "purchase_orders": pos,
-        "messages": msgs, "logs": logs, "macros": macros,
+        "messages": msgs, "logs": logs, "packages": packages, "macros": macros,
         "zero_hits": m_row[0], "dollars_saved": m_row[1]
     }
 
@@ -180,5 +237,5 @@ async def serve_os_desktop():
 
 if __name__ == "__main__":
     import uvicorn
-    print("🚀 Launching OmniOS Environment v4.0 on http://127.0.0.1:8080")
+    print("🚀 Launching OmniOS v5.0 Nova Spatial Environment on http://127.0.0.1:8080")
     uvicorn.run(app, host="127.0.0.1", port=8080)
